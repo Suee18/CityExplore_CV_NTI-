@@ -1,0 +1,7 @@
+streamlit
+google-generativeai
+Pillow
+ultralytics
+torch
+torchvision
+#pip install -r requirements.txt
