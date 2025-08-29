@@ -12,6 +12,33 @@ genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 # تحميل الموديل YOLO
 model = YOLO("best.pt")   # اسم ملف الويتس اللي رفعته
 
+# ===================== Sidebar =====================
+st.sidebar.title("👥 About the Team")
+
+team_members = {
+    "Hossam": "images/hossam.jpg",
+    "Martin ": "images/martin.jpg",
+    "Mirna ": "images/mirna.jpg",
+    "Mostafa": "images/mostafa.jpg",
+    "Salma": "images/salma.jpg",
+}
+
+for name, img_path in team_members.items():
+    try:
+        st.sidebar.image(img_path, width=80, caption=name)
+    except:
+        st.sidebar.write(f"👤 {name}")
+
+st.sidebar.markdown("---")
+st.sidebar.title("📌 About the Project")
+st.sidebar.write("""
+- **Model:** YOLOv8 (best.pt)  
+- **Data:** Google Landmarks Dataset  
+- **API:** Google Gemini API for cultural info  
+- **AR:** Streamlit frontend with AR-style info overlay  
+""")
+
+# ===================== Main App =====================
 st.title("🏙️ AI City Explorer")
 
 uploaded_file = st.file_uploader("📷 Upload an image", type=["jpg", "jpeg", "png"])
