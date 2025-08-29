@@ -1,0 +1,6 @@
+streamlit
+ultralytics
+pillow
+google-generativeai
+python-dotenv
+#for deployment
