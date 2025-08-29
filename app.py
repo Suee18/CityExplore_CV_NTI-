@@ -174,18 +174,36 @@ with st.sidebar:
     st.info("This is a **classifer model** pre-trained to classify Egyptian monuments")
     st.markdown(
         """
-        ###  Key Details
-        - *COMING SOON** `
-       
+        ### 🔧 Key Details: Two-Stage AI Pipeline
+        
+        Our system employs a sophisticated **dual-model architecture** for accurate Egyptian landmark identification:
+        
+        **Stage 1 - YOLO Object Detection:**
+        - Analyzes uploaded images to locate and isolate landmarks using bounding boxes
+        - Handles complex scenes with multiple objects or cluttered backgrounds
+        - Crops detected regions for precise classification
+        
+        **Stage 2 - ResNet18 Classification:**
+        - Processes cropped landmark images through a fine-tuned neural network
+        - Trained on 35 distinct Egyptian monument classes
+        - Achieves high accuracy by focusing on isolated landmark features
+        
+        **Integration Benefits:**
+        - **Robustness**: Works with any image composition or background
+        - **Precision**: Dual-stage approach ensures accurate identification
+        - **Scalability**: Can detect multiple landmarks in a single image
+        - **Intelligence**: Combines computer vision with cultural knowledge via Gemini AI
+        
+        This pipeline transforms raw tourist photos into rich, educational experiences about Egypt's cultural heritage.
         """,
         unsafe_allow_html=True
     )
 
     st.header("🖼️ Dataset Info")
-    st.write("Egyptian Monuments Dataset ([Kaggle link](https:))")
+    st.write("RoboFlow dataset for the pretrained model")
     st.info("""
-        - 20 classes
-        - 500+ images
+        - 35 classes
+        - 10646 images
     """)
 
     # ========================
@@ -194,22 +212,25 @@ with st.sidebar:
     st.header("👩‍💻 Developers")
 
     developers = [
+        {"name": "Martin", "img": "images/martin.jpg", "linkedin": "https://www.linkedin.com/in/martin-emad-39875429b?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app"},
+        {"name": "Mirna", "img": "images/mirna.jpg", "linkedin": "https://www.linkedin.com/in/mirna-nageh-botros?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app"},
+        {"name": "Mostafa", "img": "images/Mostafa.jpg", "linkedin": "https://www.linkedin.com/in/mustafa-mohamed131/"},
         {"name": "Hossam", "img": "images/hossam.jpg", "linkedin": "https://linkedin.com/in/hossam"},
-        {"name": "Martin", "img": "images/martin.jpg", "linkedin": "https://linkedin.com/in/martin"},
-        {"name": "Mirna",  "img": "images/mirna.jpg", "linkedin": "https://linkedin.com/in/mirna"},
-        {"name": "Mostafa", "img": "images/mostafa.jpg", "linkedin": "https://linkedin.com/in/mostafa"},
-        {"name": "Salma",  "img": "images/salma.jpg", "linkedin": "https://linkedin.com/in/salma"},
-
+        {"name": "Salma", "img": "images/salma.jpg", "linkedin": "https://linkedin.com/in/salma"},
     ]
 
     for dev in developers:
-        st.markdown(
-            f"""
-            <div style="border:1px solid #ddd; padding:10px; border-radius:10px; margin-bottom:10px; text-align:center; background:#f9f9f9;">
-                <img src="{dev['img']}" width="80" style="border-radius:50%; margin-bottom:8px;">
-                <h4 style="margin:0;">{dev['name']}</h4>
-                <a href="{dev['linkedin']}" target="_blank">🔗 LinkedIn</a>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        col1, col2 = st.columns([1, 2])
+        
+        with col1:
+            try:
+                st.image(dev['img'], width=80)
+            except:
+                st.write("📷")  # Fallback if image not found
+        
+        with col2:
+            st.markdown(f"**{dev['name']}**")
+            st.markdown(f"[🔗 LinkedIn]({dev['linkedin']})")
+        
+        st.markdown("---")
+
