@@ -1,6 +1,6 @@
 import streamlit as st
 from ultralytics import YOLO
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
@@ -14,39 +14,62 @@ model = YOLO("best.pt")   # اسم ملف الويتس اللي رفعته
 
 st.title("🏙️ AI City Explorer")
 
-# رفع صورة
 uploaded_file = st.file_uploader("📷 Upload an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    # فتح الصورة
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
+    # عرض الصورة الأصلية أولًا
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="Original Image", use_column_width=True)
+
+    # نسخة من الصورة للرسم عليها
+    image_with_boxes = image.copy()
+    draw = ImageDraw.Draw(image_with_boxes)
 
     # توقع الكلاسات
     results = model.predict(image)
 
-    # استخراج أول كلاس فقط
-    first_class = None
+    detected_classes = []
+
     for r in results:
-        if len(r.boxes) > 0:
-            box = r.boxes[0]  # أول بوكس
-            cls_id = int(box.cls[0])        
-            cls_name = r.names[cls_id]      
-            conf = float(box.conf[0]) * 100 
-            first_class = (cls_name, conf)
-            break  # نوقف عند أول كلاس
+        for box in r.boxes:
+            cls_id = int(box.cls[0])
+            cls_name = r.names[cls_id]
+            conf = float(box.conf[0]) * 100
 
-    # عرض النتيجة
-    if first_class:
-        cls_name, conf = first_class
-        st.subheader("✅ Detected Class")
-        with st.expander(f"📌 {cls_name} (Accuracy: {conf:.2f}%)", expanded=True):
-            # استعلام واحد فقط للـ Gemini API
-            model_gemini = genai.GenerativeModel("gemini-1.5-flash")
-            prompt = f"Write a short cultural description about {cls_name} in Egypt for a tourist app."
-            response = model_gemini.generate_content(prompt)
+            x1, y1, x2, y2 = box.xyxy[0]
+            x1, y1, x2, y2 = int(x1), int(y1), int(x2), int(y2)
 
-            st.markdown(f"**📝 Gemini Info about {cls_name}:**")
-            st.write(response.text)
+            # رسم البوكس
+            draw.rectangle([x1, y1, x2, y2], outline="red", width=3)
+
+            # رسم اسم الكلاس والـ accuracy
+            text = f"{cls_name} {conf:.1f}%"
+            try:
+                font = ImageFont.truetype("arial.ttf", 20)
+            except:
+                font = ImageFont.load_default()
+
+            bbox = draw.textbbox((0, 0), text, font=font)
+            text_width = bbox[2] - bbox[0]
+            text_height = bbox[3] - bbox[1]
+
+            draw.rectangle([x1, y1 - text_height, x1 + text_width, y1], fill="red")
+            draw.text((x1, y1 - text_height), text, fill="white", font=font)
+
+            detected_classes.append((cls_name, conf))
+
+    # عرض الصورة بعد الـ detection
+    st.image(image_with_boxes, caption="Detected Image with Boxes", use_column_width=True)
+
+    # عرض معلومات Gemini
+    if detected_classes:
+        st.subheader("✅ Detected Classes with Gemini Info")
+        for cls_name, conf in detected_classes:
+            with st.expander(f"📌 {cls_name} (Accuracy: {conf:.2f}%)", expanded=False):
+                model_gemini = genai.GenerativeModel("gemini-1.5-flash")
+                prompt = f"Write a short cultural description about {cls_name} in Egypt for a tourist app."
+                response = model_gemini.generate_content(prompt)
+                st.markdown(f"**📝 Gemini Info about {cls_name}:**")
+                st.write(response.text)
     else:
         st.warning("⚠️ No classes detected.")
