@@ -1,4 +1,3 @@
-*.env
-*venv
+
 *.json
 __pycache__/

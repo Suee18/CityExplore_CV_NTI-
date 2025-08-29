@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st 
 import torch
 import torch.nn as nn
 from torchvision import transforms, models
@@ -9,6 +9,7 @@ from ultralytics import YOLO
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+import json
 
 # تحميل مفتاح Gemini من .env
 load_dotenv()
@@ -92,9 +93,39 @@ if uploaded_file is not None:
         conf_percent = conf.item() * 100
         st.write(f"🔮 Prediction: *{label}* (Accuracy: {conf_percent:.2f}%)")
 
-        # Gemini description
+        # Gemini structured JSON description
         model_gemini = genai.GenerativeModel("gemini-1.5-flash")
-        prompt = f"Write a short cultural description about {label} in Egypt for a tourist app."
-        response = model_gemini.generate_content(prompt)
-        st.markdown(f"**📝 Gemini Info about {label}:**")
-        st.write(response.text)
+        prompt = f"""
+        You are an AI that provides tourist information about Egyptian landmarks. 
+        Return ONLY valid JSON in this format:
+
+        {{
+          "paragraph": "A 5-sentence cultural description about {label}.",
+          "location": "City, Egypt",
+          "years_old": "Approximate age in years",
+          "category": "Temple, Pyramid, Statue, or Museum Artifact",
+          "fun_fact": "One fun/interesting fact about it."
+        }}
+        """
+        response = model_gemini.generate_content(prompt)   ### FIX (was model not defined)
+        raw_response = response.text.strip()
+
+        try:
+            info = json.loads(raw_response)   ### FIX (was data/info mismatch)
+        except json.JSONDecodeError:
+            print("⚠️ Gemini did not return valid JSON:", raw_response)
+            info = {
+                "paragraph": raw_response,
+                "location": "N/A",
+                "years_old": "N/A",
+                "category": "N/A",
+                "fun_fact": "N/A"
+            }
+
+        # Show nicely in Streamlit
+        st.markdown(f"### 🏛️ {label}")
+        st.write(info["paragraph"])
+        st.write(f"**📍 Location:** {info['location']}")
+        st.write(f"**⏳ Age:** {info['years_old']} years old")
+        st.write(f"**🏷️ Category:** {info['category']}")
+        st.write(f"**✨ Fun Fact:** {info['fun_fact']}")
