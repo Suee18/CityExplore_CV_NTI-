@@ -101,7 +101,7 @@ if uploaded_file is not None:
         st.write(f"🔮 Prediction: *{label}* (Accuracy: {conf_percent:.2f}%)")
 
         # Gemini structured JSON description
-        model_gemini = genai.GenerativeModel("gemini-1.5-flash")
+        model_gemini = genai.GenerativeModel("gemini-2.5-flash")
         prompt = f"""
         You are an AI that provides tourist information about Egyptian landmarks. 
         Return ONLY valid JSON in this format:
